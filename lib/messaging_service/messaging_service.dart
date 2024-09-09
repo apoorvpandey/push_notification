@@ -48,33 +48,35 @@ class MessagingService {
           final screen = notificationData['screen'];
 
           // Showing an alert dialog when a notification is received (Foreground state)
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (BuildContext context) {
-              return WillPopScope(
-                onWillPop: () async => false,
-                child: AlertDialog(
-                  title: Text(message.notification!.title!),
-                  content: Text(message.notification!.body!),
-                  actions: [
-                    if (notificationData.containsKey('screen'))
+          if (context.mounted) {
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext context) {
+                return PopScope(
+                  canPop: false,
+                  child: AlertDialog(
+                    title: Text(message.notification!.title!),
+                    content: Text(message.notification!.body!),
+                    actions: [
+                      if (notificationData.containsKey('screen'))
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            Navigator.of(context).pushNamed(screen);
+                          },
+                          child: const Text('Open Screen'),
+                        ),
                       TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          Navigator.of(context).pushNamed(screen);
-                        },
-                        child: const Text('Open Screen'),
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Dismiss'),
                       ),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Dismiss'),
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
+                    ],
+                  ),
+                );
+              },
+            );
+          }
         }
       }
     });
@@ -83,17 +85,21 @@ class MessagingService {
     // When the app is killed and a new notification arrives when user clicks on it
     // It gets the data to which screen to open
     FirebaseMessaging.instance.getInitialMessage().then((message) {
-      if (message != null) {
+      if (message != null && context.mounted) {
         _handleNotificationClick(context, message);
       }
     });
 
     // Handling a notification click event when the app is in the background
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      debugPrint(
-          'onMessageOpenedApp: ${message.notification!.title.toString()}');
-      _handleNotificationClick(context, message);
-    });
+    if (context.mounted) {
+      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+        debugPrint(
+            'onMessageOpenedApp: ${message.notification!.title.toString()}');
+        if (context.mounted) {
+          _handleNotificationClick(context, message);
+        }
+      });
+    }
   }
 
   // Handling a notification click event by navigating to the specified screen

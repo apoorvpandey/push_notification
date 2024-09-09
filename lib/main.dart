@@ -1,7 +1,6 @@
 // Importing required packages
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-
 // Importing custom files
 import 'package:push_notification/firebase_options.dart';
 import 'package:push_notification/presentation/home_page/home_page.dart';
@@ -13,9 +12,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initializing Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Running the app
   runApp(const MyApp());
